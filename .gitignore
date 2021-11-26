@@ -1,0 +1,7 @@
+## vim swap files:
+.*.swp
+
+
+## Compiled Binaries:
+alertIfTooClose
+*.o
