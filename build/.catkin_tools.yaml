@@ -1,0 +1,6 @@
+devel_space: /home/adin/catkin_ws/src/mynteye_collision_ros/devel
+install: false
+install_space: /home/adin/catkin_ws/src/mynteye_collision_ros/install
+profile: default
+source_space: /home/adin/catkin_ws/src/mynteye_collision_ros/src
+workspace: /home/adin/catkin_ws/src/mynteye_collision_ros

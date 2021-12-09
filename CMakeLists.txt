@@ -8,11 +8,25 @@ project(mynteye_collision_ros)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  rocpp
+  roscpp
   rospy
   sensor_msgs
   std_msgs
+  # cv_bridge
 )
+find_package(OpenCV 4 REQUIRED) # manual specification of the OpenCVConfig.cmake path is necessary since otherwise, cmake assigns /opt/local a higher priority and ocv2.4 will be used
+if(OpenCV_FOUND)
+  MESSAGE ( STATUS "Found OpenCV: ${OpenCV_VERSION}" )
+  MESSAGE ( STATUS "OpenCV_INCLUDE_DIRS= ${OpenCV_INCLUDE_DIRS}" )
+endif(OpenCV_FOUND)
+
+add_definitions(-DOPENCV)
+add_definitions(-O3 -g)
+add_definitions (-DWITH_OPENCV) 
+
+
+# set(CMAKE_BUILD_RPATH "~/MYNT-EYE-D-SDK/3rdparty/eSPDI/linux/x64")
+
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -106,7 +120,8 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES mynteye_collision_ros
-#  CATKIN_DEPENDS rocpp rospy sensor_msgs std_msgs
+ CATKIN_DEPENDS roscpp rospy sensor_msgs std_msgs 
+ #cv_bridge
 #  DEPENDS system_lib
 )
 
@@ -119,12 +134,14 @@ catkin_package(
 include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
-)
+  ${OpenCV_INCLUDE_DIRS})
+  # ~/MYNT-EYE-D-SDK/3rdparty/eSPDI/linux/x64)
 
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/mynteye_collision_ros.cpp
-# )
+add_library(${PROJECT_NAME}
+  src/CDNeuralNet.cpp
+  src/CDNeuralNet.hpp
+)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -134,7 +151,11 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/mynteye_collision_ros_node.cpp)
+add_executable(${PROJECT_NAME}_node 
+src/main.cpp
+src/CDNeuralNet.cpp
+src/CDNeuralNet.hpp
+)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -144,12 +165,51 @@ include_directories(
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(${PROJECT_NAME}_node
-#   ${catkin_LIBRARIES}
+# link_directories(/home/MYNT-EYE-D-SDK/3rdparty/eSPDI/linux/x64
+
+target_link_libraries(${PROJECT_NAME}_node
+  pthread
+  stdc++
+  ${Boost_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  ${catkin_LIBRARIES}
+  mynteye_depth
+  ${OpenCV_LIBS}
+  # leSPDI
+)
+
+
+# add_library(LIBeSPDI SHARED IMPORTED )
+# set_target_properties(LIBeSPDI PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_LIST_DIR}/MYNT-EYE-D-SDK/3rdparty/eSPDI/linux/x64/libeSPDI.so)
+# target_link_libraries(eSPDI SHARED LIBeSPDI )
+
+
+
+# # use, i.e. don't skip the full RPATH for the build tree
+# set(CMAKE_SKIP_BUILD_RPATH FALSE)
+
+# when building, don't use the install RPATH already
+# (but later on when installing)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+
+set(CMAKE_INSTALL_RPATH "~/MYNT-EYE-D-SDK/3rdparty/eSPDI/linux/x64")
+# add the automatically determined parts of the RPATH
+# which point to directories outside the build tree to the install RPATH
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+
+
+# include_directories(
+#     ~/MYNT-EYE-D-SDK/3rdparty/eSPDI/linux/x64
 # )
+
+# set(SOURCES main.cpp ~/MYNT-EYE-D-SDK/3rdparty/eSPDI/linux/x64/libeSPDI.so)
+# add_executable(libesPDI ${SOURCES})
+
+
 
 #############
 ## Install ##

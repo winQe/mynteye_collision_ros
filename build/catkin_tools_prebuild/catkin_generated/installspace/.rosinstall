@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/adin/catkin_ws/src/mynteye_collision_ros/install/setup.sh

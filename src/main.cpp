@@ -1,13 +1,3 @@
-/*
- * collision-detector
- *
- * Using an RGB-D (depth) camera, detect people and measure the distance to them.
- *
- * Copyright 2019 Mark Fassler
- * Licensed under the GPLv3
- *
- */
-
 #include <stdio.h>
 #include <sys/time.h>
 #include <unistd.h>
@@ -24,16 +14,18 @@
 
 #include "CDNeuralNet.hpp"
 
-#include "ros.ros.h
+#include <ros/ros.h>
+#include <std_msgs/Float32.h>
 
 using namespace std;
 using namespace MYNTEYE_NAMESPACE;
 
 
 // The pre-trained neural-network for people detection:
-const char* nn_weightfile = "darknet/yolov3-tiny.weights";
-const char* nn_cfgfile = "darknet/cfg/yolov3-tiny.cfg";
-const char* nn_meta_file = "darknet/cfg/coco.data";
+const char* nn_weightfile = "/home/adin/catkin_ws/src/mynteye_collision_ros/src/darknet/yolov3-tiny.weights";
+const char* nn_cfgfile = "/home/adin/catkin_ws/src/mynteye_collision_ros/src/darknet/cfg/yolov3-tiny.cfg";
+const char* nn_meta_file = "/home/adin/catkin_ws/src/mynteye_collision_ros/src/darknet/cfg/coco.data";
+
 
 
 double gettimeofday_as_double() {
@@ -58,20 +50,22 @@ void worker_thread(CDNeuralNet _cdNet) {
 }
 
 // Command-line options:
-std::string keys =
-	"{ help   h | | Print help message. }"
-	"{ serial   | | choose specific RealSense by serial number}";
+// std::string keys =
+// 	"{ help   h | | Print help message. }"
+// 	"{ serial   | | choose specific RealSense by serial number}";
 
 int main(int argc, char* argv[]) {
 
-	cv::CommandLineParser parser(argc, argv, keys);
+	//Initalize Command Line Parser to print help message and get serial number
 
-	if (parser.has("help")) {
-		parser.printMessage();
-		return 0;
-	}
+	// cv::CommandLineParser parser(argc, argv, keys);
 
-	const std::string serialNumber = parser.get<cv::String>("serial");
+	// if (parser.has("help")) {
+	// 	parser.printMessage();
+	// 	return 0;
+	// }
+
+	// const std::string serialNumber = parser.get<cv::String>("serial");
 
 	struct timeval tv;
 	int _DEPTH_WIDTH = 1280;
@@ -84,9 +78,15 @@ int main(int argc, char* argv[]) {
 	float _YELLOW_DISTANCE_IN_METERS = 2.0;
 	float _RED_DISTANCE_IN_METERS = 1.0;
 
-	//Initialize ROS Node
-	ros::init(argc, argv, "object_detection");
+
+	// //Initialize ROS Node
+	ros::init(argc, argv, "mynteye_collision_ros_node");
 	ros::NodeHandle n;
+
+
+	// //Tell the publisher to publish
+	ros::Publisher dist_pub = n.advertise<std_msgs::Float32>("human_detection",1000);
+	std_msgs::Float32 m;
 
 	// ---------------------------------------------------------
 	//  BEGIN:  Start MYNT-EYE-D
@@ -124,11 +124,9 @@ int main(int argc, char* argv[]) {
 	int RED_DISTANCE = (int)  (_RED_DISTANCE_IN_METERS * 1000);
 
 
-
 	// ---------------------------------------------------------
 	//  END:  Start MYNT-EYE-D
 	// ---------------------------------------------------------
-
 
 	// ---------------------------------------------------------
 	//  BEGIN:  Start NN
@@ -141,16 +139,19 @@ int main(int argc, char* argv[]) {
 	// Run the neural network in a different thread:
 	std::thread worker(worker_thread, cdNet);
 
+	cout<< "Neural Network Started Successfully"<<endl<<endl;
+
 	// ---------------------------------------------------------
 	//  END:  Start Darknet
 	// ---------------------------------------------------------
 
+
 	//Initialize new OpenCV window to output bounding boxes
-	cv::namedWindow("MYNT-EYE-D", cv::WINDOW_NORMAL); 
+	// cv::namedWindow("MYNT-EYE-D", cv::WINDOW_NORMAL); 
 
 	cv::Mat imD;
-	while (true) {
-
+	while (ros::ok()) {
+	// while(true){
 		cam.WaitForStream();
 		//counter.Update();
 
@@ -250,32 +251,38 @@ int main(int argc, char* argv[]) {
 				all_depth_min = depth_min;
 			}
 
-			cv::Rect r = cv::Rect(x_min, y_min, width, height);
+			// cv::Rect r = cv::Rect(x_min, y_min, width, height);
 
-			if (depth_min < RED_DISTANCE) {
-				cv::rectangle(imRGB, r, cv::Scalar(0,0,200), 11);
-			} else if (depth_min < YELLOW_DISTANCE) {
-				cv::rectangle(imRGB, r, cv::Scalar(0,230,230), 9);
-			} else {
-				cv::rectangle(imRGB, r, cv::Scalar(255,255,255), 9);
-			}
+			// if (depth_min < RED_DISTANCE) {
+			// 	cv::rectangle(imRGB, r, cv::Scalar(0,0,200), 11);
+			// } else if (depth_min < YELLOW_DISTANCE) {
+			// 	cv::rectangle(imRGB, r, cv::Scalar(0,230,230), 9);
+			// } else {
+			// 	cv::rectangle(imRGB, r, cv::Scalar(255,255,255), 9);
+			// }
 		}
 
 		float closest = all_depth_min * depth_scale;
-		if (closest < _MAX_DISPLAY_DISTANCE_IN_METERS) {
-			char textBuffer[255];
-			sprintf(textBuffer, "%.02f m", closest);
-			auto font = cv::FONT_HERSHEY_SIMPLEX;
-			cv::putText(imRGB, textBuffer, cv::Point(19,119), font, 4, cv::Scalar(0,0,0), 8);  // black shadow
-			cv::putText(imRGB, textBuffer, cv::Point(10,110), font, 4, cv::Scalar(255,255,255), 8);  // white text
-		}
+		// if (closest < _MAX_DISPLAY_DISTANCE_IN_METERS) {
+		// 	char textBuffer[255];
+		// 	sprintf(textBuffer, "%.02f m", closest);
+		// 	auto font = cv::FONT_HERSHEY_SIMPLEX;
+		// 	cv::putText(imRGB, textBuffer, cv::Point(19,119), font, 4, cv::Scalar(0,0,0), 8);  // black shadow
+		// 	cv::putText(imRGB, textBuffer, cv::Point(10,110), font, 4, cv::Scalar(255,255,255), 8);  // white text
+		// }
+		if (closest < _MAX_DISPLAY_DISTANCE_IN_METERS){
+			m.data = (float)closest;
+			dist_pub.publish(m);
+			ROS_INFO("closest distance = %f",closest);
+			}
 
-		cv::setWindowProperty("MYNT-EYE-D", cv::WND_PROP_AUTOSIZE, cv::WINDOW_NORMAL);
-		cv::imshow("MYNT-EYE-D", imRGB);
-		cv::waitKey(1);
+		// cv::setWindowProperty("MYNT-EYE-D", cv::WND_PROP_AUTOSIZE, cv::WINDOW_NORMAL);
+		// cv::imshow("MYNT-EYE-D", imRGB);
+		// cv::waitKey(1);
+		ros::spinOnce();
 
-		//gettimeofday(&tv, NULL);
-		//printf("ts: %ld.%06ld\n", tv.tv_sec, tv.tv_usec);
+		// gettimeofday(&tv, NULL);
+		// printf("ts: %ld.%06ld\n", tv.tv_sec, tv.tv_usec);
 	}
 
 	return 0;

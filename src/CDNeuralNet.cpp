@@ -26,8 +26,6 @@ CDNeuralNet::CDNeuralNet(std::string modelPath, std::string configPath) {
 }
 
 
-
-
 void CDNeuralNet::detect(cv::Mat frame) {
 
 	// Create a 4D blob from a frame.
@@ -47,13 +45,13 @@ void CDNeuralNet::detect(cv::Mat frame) {
 
 
 	// This never seems to happen, and I don't know what it does:
-	if (_net.getLayer(0)->outputNameToIndex("im_info") != -1)  // Faster-RCNN or R-FCN
-	{
-		printf(" ### This code is untested... ### \n");
-		resize(frame, frame, _inpSize);
-		cv::Mat imInfo = (cv::Mat_<float>(1, 3) << _inpSize.height, _inpSize.width, 1.6f);
-		_net.setInput(imInfo, "im_info");
-	}
+	// if (_net.getLayer(0)->outputNameToIndex("im_info") != -1)  // Faster-RCNN or R-FCN
+	// {
+	// 	printf(" ### This code is untested... ### \n");
+	// 	resize(frame, frame, _inpSize);
+	// 	cv::Mat imInfo = (cv::Mat_<float>(1, 3) << _inpSize.height, _inpSize.width, 1.6f);
+	// 	_net.setInput(imInfo, "im_info");
+	// }
 
 	std::vector<cv::Mat> outs;
 	_net.forward(outs, _outNames);
@@ -112,6 +110,7 @@ ssize_t CDNeuralNet::get_output_boxes(struct _bbox *buf, size_t len) {
 		if (count > len) {
 			break;
 		}
+		//Only output bounding boxes if confidence > 0.4 and classId=0 (HUMAN)
 		if (bboxes[bboxIdx][i].confidence > 0.4 && bboxes[bboxIdx][i].classId == 0) {
 			buf[count].classId = bboxes[bboxIdx][i].classId;
 			buf[count].confidence = bboxes[bboxIdx][i].confidence;
