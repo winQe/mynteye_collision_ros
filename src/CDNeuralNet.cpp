@@ -43,16 +43,6 @@ void CDNeuralNet::detect(cv::Mat frame) {
 
 	_net.setInput(blob);
 
-
-	// This never seems to happen, and I don't know what it does:
-	// if (_net.getLayer(0)->outputNameToIndex("im_info") != -1)  // Faster-RCNN or R-FCN
-	// {
-	// 	printf(" ### This code is untested... ### \n");
-	// 	resize(frame, frame, _inpSize);
-	// 	cv::Mat imInfo = (cv::Mat_<float>(1, 3) << _inpSize.height, _inpSize.width, 1.6f);
-	// 	_net.setInput(imInfo, "im_info");
-	// }
-
 	std::vector<cv::Mat> outs;
 	_net.forward(outs, _outNames);
 

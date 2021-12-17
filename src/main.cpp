@@ -49,23 +49,8 @@ void worker_thread(CDNeuralNet _cdNet) {
 	}
 }
 
-// Command-line options:
-// std::string keys =
-// 	"{ help   h | | Print help message. }"
-// 	"{ serial   | | choose specific RealSense by serial number}";
 
 int main(int argc, char* argv[]) {
-
-	//Initalize Command Line Parser to print help message and get serial number
-
-	// cv::CommandLineParser parser(argc, argv, keys);
-
-	// if (parser.has("help")) {
-	// 	parser.printMessage();
-	// 	return 0;
-	// }
-
-	// const std::string serialNumber = parser.get<cv::String>("serial");
 
 	struct timeval tv;
 	int _DEPTH_WIDTH = 1280;
@@ -147,13 +132,10 @@ int main(int argc, char* argv[]) {
 
 
 	//Initialize new OpenCV window to output bounding boxes
-	// cv::namedWindow("MYNT-EYE-D", cv::WINDOW_NORMAL); 
 
 	cv::Mat imD;
 	while (ros::ok()) {
-	// while(true){
 		cam.WaitForStream();
-		//counter.Update();
 
 		auto image_color = cam.GetStreamData(ImageType::IMAGE_LEFT_COLOR);
 		if (image_color.img) {
@@ -250,39 +232,16 @@ int main(int argc, char* argv[]) {
 			if (depth_min < all_depth_min) {
 				all_depth_min = depth_min;
 			}
-
-			// cv::Rect r = cv::Rect(x_min, y_min, width, height);
-
-			// if (depth_min < RED_DISTANCE) {
-			// 	cv::rectangle(imRGB, r, cv::Scalar(0,0,200), 11);
-			// } else if (depth_min < YELLOW_DISTANCE) {
-			// 	cv::rectangle(imRGB, r, cv::Scalar(0,230,230), 9);
-			// } else {
-			// 	cv::rectangle(imRGB, r, cv::Scalar(255,255,255), 9);
-			// }
 		}
 
 		float closest = all_depth_min * depth_scale;
-		// if (closest < _MAX_DISPLAY_DISTANCE_IN_METERS) {
-		// 	char textBuffer[255];
-		// 	sprintf(textBuffer, "%.02f m", closest);
-		// 	auto font = cv::FONT_HERSHEY_SIMPLEX;
-		// 	cv::putText(imRGB, textBuffer, cv::Point(19,119), font, 4, cv::Scalar(0,0,0), 8);  // black shadow
-		// 	cv::putText(imRGB, textBuffer, cv::Point(10,110), font, 4, cv::Scalar(255,255,255), 8);  // white text
-		// }
 		if (closest < _MAX_DISPLAY_DISTANCE_IN_METERS){
 			m.data = (float)closest;
 			dist_pub.publish(m);
 			ROS_INFO("closest distance = %f",closest);
 			}
 
-		// cv::setWindowProperty("MYNT-EYE-D", cv::WND_PROP_AUTOSIZE, cv::WINDOW_NORMAL);
-		// cv::imshow("MYNT-EYE-D", imRGB);
-		// cv::waitKey(1);
 		ros::spinOnce();
-
-		// gettimeofday(&tv, NULL);
-		// printf("ts: %ld.%06ld\n", tv.tv_sec, tv.tv_usec);
 	}
 
 	return 0;
