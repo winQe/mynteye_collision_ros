@@ -5,3 +5,5 @@
 ## Compiled Binaries:
 alertIfTooClose
 *.o
+src/darknet/yolov4.weights
+src/darknet/yolov3.weights

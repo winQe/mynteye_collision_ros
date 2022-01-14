@@ -22,8 +22,8 @@ using namespace MYNTEYE_NAMESPACE;
 
 
 // The pre-trained neural-network for people detection:
-const char* nn_weightfile = "/home/adin/catkin_ws/src/mynteye_collision_ros/src/darknet/yolov3-tiny.weights";
-const char* nn_cfgfile = "/home/adin/catkin_ws/src/mynteye_collision_ros/src/darknet/cfg/yolov3-tiny.cfg";
+const char* nn_weightfile = "/home/adin/catkin_ws/src/mynteye_collision_ros/src/darknet/yolov4.weights";
+const char* nn_cfgfile = "/home/adin/catkin_ws/src/mynteye_collision_ros/src/darknet/cfg/yolov4.cfg";
 const char* nn_meta_file = "/home/adin/catkin_ws/src/mynteye_collision_ros/src/darknet/cfg/coco.data";
 
 
@@ -253,7 +253,7 @@ int main(int argc, char* argv[]) {
 			m.classId = (int)classId;
 			m.confidence = (float)conf;
 			dist_pub.publish(m);
-			ROS_INFO("object %d  x,y = (%f,%f) closest distance = %f",classId,x_mid,y_mid,closest);
+			ROS_INFO("object %d  x,y = (%f,%f) closest distance = %f     confidence = %f",classId,x_mid,y_mid,closest,conf);
 			}
 
 		ros::spinOnce();
