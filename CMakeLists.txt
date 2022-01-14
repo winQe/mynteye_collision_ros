@@ -1,11 +1,14 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(mynteye_collision_ros)
+set(CMAKE_BUILD_TYPE Debug)
+
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   sensor_msgs
   std_msgs
+  message_generation
 )
 find_package(OpenCV 4 REQUIRED) # manual specification of the OpenCVConfig.cmake path is necessary since otherwise, cmake assigns /opt/local a higher priority and ocv2.4 will be used
 if(OpenCV_FOUND)
@@ -13,15 +16,23 @@ if(OpenCV_FOUND)
   MESSAGE ( STATUS "OpenCV_INCLUDE_DIRS= ${OpenCV_INCLUDE_DIRS}" )
 endif(OpenCV_FOUND)
 
+add_message_files(
+  FILES
+  closest_distance.msg
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
+
 add_definitions(-DOPENCV)
 add_definitions(-O3 -g)
 add_definitions (-DWITH_OPENCV) 
 
-
 catkin_package(
- CATKIN_DEPENDS roscpp rospy sensor_msgs std_msgs 
+ CATKIN_DEPENDS roscpp rospy sensor_msgs std_msgs message_runtime
 )
-
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
@@ -47,7 +58,6 @@ target_link_libraries(${PROJECT_NAME}_node
   mynteye_depth
   ${OpenCV_LIBS}
 )
-
 
 # add_library(LIBeSPDI SHARED IMPORTED )
 # set_target_properties(LIBeSPDI PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_LIST_DIR}/MYNT-EYE-D-SDK/3rdparty/eSPDI/linux/x64/libeSPDI.so)

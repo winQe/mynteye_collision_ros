@@ -15,7 +15,7 @@
 #include "CDNeuralNet.hpp"
 
 #include <ros/ros.h>
-#include <std_msgs/Float32.h>
+#include <mynteye_collision_ros/closest_distance.h>
 
 using namespace std;
 using namespace MYNTEYE_NAMESPACE;
@@ -70,8 +70,8 @@ int main(int argc, char* argv[]) {
 
 
 	// //Tell the publisher to publish
-	ros::Publisher dist_pub = n.advertise<std_msgs::Float32>("human_detection",1000);
-	std_msgs::Float32 m;
+	ros::Publisher dist_pub = n.advertise<mynteye_collision_ros::closest_distance>("human_detection",1000);
+	mynteye_collision_ros::closest_distance m;
 
 	// ---------------------------------------------------------
 	//  BEGIN:  Start MYNT-EYE-D
@@ -124,7 +124,7 @@ int main(int argc, char* argv[]) {
 	// Run the neural network in a different thread:
 	std::thread worker(worker_thread, cdNet);
 
-	cout<< "Neural Network Started Successfully"<<endl<<endl;
+	cout<< "Neural Network Started Successfully, New"<<endl<<endl;
 
 	// ---------------------------------------------------------
 	//  END:  Start Darknet
@@ -174,6 +174,8 @@ int main(int argc, char* argv[]) {
 		float half_w = _RGB_WIDTH / 2.0;
 		float half_h = _RGB_HEIGHT / 2.0;
 
+		float x_mid,y_mid,W,H,conf;
+		int classId;
 
 		//printf("nboxes: %d\n", nboxes_a);
 
@@ -231,14 +233,27 @@ int main(int argc, char* argv[]) {
 
 			if (depth_min < all_depth_min) {
 				all_depth_min = depth_min;
+				x_mid = x_center;
+			 	y_mid = y_center;
+				H = height;
+				W = width; 
+				classId = bboxes_a[i].classId;
+				conf = bboxes_a[i].confidence;
 			}
 		}
 
 		float closest = all_depth_min * depth_scale;
+		// cout<<closest<<x_mid<<y_mid<<classId<<endl;
 		if (closest < _MAX_DISPLAY_DISTANCE_IN_METERS){
-			m.data = (float)closest;
+			m.distance = (float)closest;
+			m.x = (float)x_mid;
+			m.y = (float)y_mid;
+			m.width = (float)W;
+			m.height = (float)H;
+			m.classId = (int)classId;
+			m.confidence = (float)conf;
 			dist_pub.publish(m);
-			ROS_INFO("closest distance = %f",closest);
+			ROS_INFO("object %d  x,y = (%f,%f) closest distance = %f",classId,x_mid,y_mid,closest);
 			}
 
 		ros::spinOnce();
