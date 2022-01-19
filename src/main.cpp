@@ -70,7 +70,7 @@ int main(int argc, char* argv[]) {
 
 
 	// //Tell the publisher to publish
-	ros::Publisher dist_pub = n.advertise<mynteye_collision_ros::closest_distance>("human_detection",1000);
+	ros::Publisher dist_pub = n.advertise<mynteye_collision_ros::closest_distance>("collision_detection",1000);
 	mynteye_collision_ros::closest_distance m;
 
 	// ---------------------------------------------------------
