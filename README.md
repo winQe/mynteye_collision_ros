@@ -50,3 +50,6 @@ To run the node
 * **`/collision_detection`** (Message type [mynteye_collision_ros::closest_distance])
   
   Publishes the distance, coordinates, and object class id of the closest detected object, including its bounding box and confidence.
+
+## TODO
+* Recalibrate the depth scale at [main.cpp](src/main.cpp) line 106 as the distance is not very accurate in the current state
